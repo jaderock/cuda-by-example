@@ -9,3 +9,8 @@ cuda_binary(
     name = "pass-params",
     srcs = ["pass-params.cc"],
 )
+
+cuda_binary(
+    name = "query-device",
+    srcs = ["query-device.cc"],
+)
