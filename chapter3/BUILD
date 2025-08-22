@@ -14,3 +14,8 @@ cuda_binary(
     name = "query-device",
     srcs = ["query-device.cc"],
 )
+
+cuda_binary(
+    name = "choose-device",
+    srcs = ["choose-device.cc"],
+)
