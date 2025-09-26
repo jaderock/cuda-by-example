@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "hello-world", "chapter03\he
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pass-params", "chapter03\pass-params.vcxproj", "{CC1316EC-478A-E990-D6E1-3FFAEC3D9893}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "query-device", "chapter03\query-device.vcxproj", "{86F9362D-0502-7EF5-866B-2BB8775161E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -33,6 +35,14 @@ Global
 		{CC1316EC-478A-E990-D6E1-3FFAEC3D9893}.Release|x64.Build.0 = Release|x64
 		{CC1316EC-478A-E990-D6E1-3FFAEC3D9893}.Release|x86.ActiveCfg = Release|x64
 		{CC1316EC-478A-E990-D6E1-3FFAEC3D9893}.Release|x86.Build.0 = Release|x64
+		{86F9362D-0502-7EF5-866B-2BB8775161E5}.Debug|x64.ActiveCfg = Debug|x64
+		{86F9362D-0502-7EF5-866B-2BB8775161E5}.Debug|x64.Build.0 = Debug|x64
+		{86F9362D-0502-7EF5-866B-2BB8775161E5}.Debug|x86.ActiveCfg = Debug|x64
+		{86F9362D-0502-7EF5-866B-2BB8775161E5}.Debug|x86.Build.0 = Debug|x64
+		{86F9362D-0502-7EF5-866B-2BB8775161E5}.Release|x64.ActiveCfg = Release|x64
+		{86F9362D-0502-7EF5-866B-2BB8775161E5}.Release|x64.Build.0 = Release|x64
+		{86F9362D-0502-7EF5-866B-2BB8775161E5}.Release|x86.ActiveCfg = Release|x64
+		{86F9362D-0502-7EF5-866B-2BB8775161E5}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -40,6 +50,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7AA300B9-7691-FD1F-4BD1-377B2966F237} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{CC1316EC-478A-E990-D6E1-3FFAEC3D9893} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{86F9362D-0502-7EF5-866B-2BB8775161E5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FED093CE-BF08-4D50-8C9E-A27BBAE0C32F}
