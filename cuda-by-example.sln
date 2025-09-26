@@ -13,6 +13,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "query-device", "chapter03\q
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "choose-device", "chapter03\choose-device.vcxproj", "{FFE75AD6-47DE-E2FB-DD70-95F4A6C2EF01}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "chapter04", "chapter04", "{D8BC01AC-63CA-4EF5-B5A8-FA78CABFCB1A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vector-sum", "chapter04\vector-sum.vcxproj", "{746894FB-F8AE-DFBB-5A7F-C40550652F4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -53,6 +57,14 @@ Global
 		{FFE75AD6-47DE-E2FB-DD70-95F4A6C2EF01}.Release|x64.Build.0 = Release|x64
 		{FFE75AD6-47DE-E2FB-DD70-95F4A6C2EF01}.Release|x86.ActiveCfg = Release|x64
 		{FFE75AD6-47DE-E2FB-DD70-95F4A6C2EF01}.Release|x86.Build.0 = Release|x64
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F}.Debug|x64.ActiveCfg = Debug|x64
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F}.Debug|x64.Build.0 = Debug|x64
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F}.Debug|x86.ActiveCfg = Debug|x64
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F}.Debug|x86.Build.0 = Debug|x64
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F}.Release|x64.ActiveCfg = Release|x64
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F}.Release|x64.Build.0 = Release|x64
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F}.Release|x86.ActiveCfg = Release|x64
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F}.Release|x86.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +74,7 @@ Global
 		{CC1316EC-478A-E990-D6E1-3FFAEC3D9893} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{86F9362D-0502-7EF5-866B-2BB8775161E5} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{FFE75AD6-47DE-E2FB-DD70-95F4A6C2EF01} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{746894FB-F8AE-DFBB-5A7F-C40550652F4F} = {D8BC01AC-63CA-4EF5-B5A8-FA78CABFCB1A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FED093CE-BF08-4D50-8C9E-A27BBAE0C32F}
