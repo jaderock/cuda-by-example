@@ -69,6 +69,12 @@ struct CPUBitmap {
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+      // Handle initialization failure
+      // e.g., std::cout << "Failed to initialize GLAD" << std::endl;
+      return;
+    }
+
     while (!glfwWindowShouldClose(window)) {
       // input
       processInput(window);
@@ -102,10 +108,10 @@ struct CPUBitmap {
   // static method used for glut callbacks
   static void Draw( void ) {
     //CPUBitmap*   bitmap = *(get_bitmap_ptr());
-    //glClearColor( 0.0, 0.0, 0.0, 1.0 );
-    //glClear( GL_COLOR_BUFFER_BIT );
+    glClearColor(1.0, 0.0, 0.0, 1.0 );
+    glClear( GL_COLOR_BUFFER_BIT );
     //glDrawPixels( bitmap->x, bitmap->y, GL_RGBA, GL_UNSIGNED_BYTE, bitmap->pixels.get() );
-    //glFlush();
+    glFlush();
   }
 };
 
