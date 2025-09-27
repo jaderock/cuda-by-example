@@ -12,5 +12,14 @@ cuda_binary(
 
 cuda_binary(
     name = "cuda_dot",
-    srcs = ["dot.cu"],
+    srcs = [":dot.cu"],
+)
+
+cuda_binary(
+    name = "shared_bitmap",
+    srcs = [":shared_bitmap.cu"],
+    deps = [
+        "//common:glfw-helper",
+        "//third-party/glad_opengl_v4_6:glad-lib",
+    ],
 )
