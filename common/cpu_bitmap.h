@@ -34,19 +34,7 @@ struct CPUBitmap {
   void display_and_exit( void(*e)(void*) = NULL ) {
     CPUBitmap** bitmap = get_bitmap_ptr();
     *bitmap = this;
-      /*
-          bitmapExit = e;
-          // a bug in the Windows GLUT implementation prevents us from
-          // passing zero arguments to glutInit()
-          int c=1;
-          char* dummy = "";
-          glutInit( &c, &dummy );
-          glutInitDisplayMode( GLUT_SINGLE | GLUT_RGBA );
-          glutInitWindowSize( x, y );
-          glutCreateWindow( "bitmap" );
-          glutDisplayFunc(Draw);
-          glutMainLoop();
-          */
+
     // glfw: initialize and configure
     // ------------------------------
     glfwInit();
