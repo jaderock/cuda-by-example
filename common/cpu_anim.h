@@ -1,5 +1,5 @@
-#ifndef __CPU_BITMAP_H__
-#define __CPU_BITMAP_H__
+#ifndef __CPU_ANIM_H__
+#define __CPU_ANIM_H__
 
 #include <iostream>
 #include <memory>
@@ -7,7 +7,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-typedef struct Vertex {
+typedef struct Vertex
+{
   float pos[2];
   float uv[2];
 } Vertex;
@@ -44,21 +45,26 @@ static const char *fragment_shader_text =
     "  fragment = texture(texSampler, uv);\n"
     "}\n";
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+{
 }
 
-void processInput(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+void processInput(GLFWwindow *window)
+{
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+  {
     glfwSetWindowShouldClose(window, true);
   }
 }
 
-struct CPUBitmap {
-  std::unique_ptr<unsigned char> pixels;
-  int width_ = 0;
-  int height_ = 0;
+struct CPUAnimBitmap {
+  std::unique_ptr<unsigned char[]> pixels;
+  int width, height;
   void *dataBlock;
-  void (*bitmapExit)(void*);
+  void (*fAnim)(void *, int);
+  void (*animExit)(void *);
+  void (*clickDrag)(void *, int, int, int, int);
+  int dragStartX, dragStartY;
 
   // OpenGL resources
   GLuint vertex_buffer = 0;
@@ -67,12 +73,15 @@ struct CPUBitmap {
   GLuint program = 0;
   GLuint texture = 0;
 
-  CPUBitmap(int width, int height, void *d = NULL) : width_(width), height_(height), dataBlock(d)
-  {
+  CPUAnimBitmap(int w, int h, void *d = NULL) {
+    width = w;
+    height = h;
     pixels.reset(new unsigned char[width * height * 4]);
+    dataBlock = d;
+    clickDrag = NULL;
   }
 
-  ~CPUBitmap() {
+  ~CPUAnimBitmap() {
     glDeleteBuffers(1, &vertex_buffer);
     glDetachShader(program, vertex_shader);
     glDetachShader(program, fragment_shader);
@@ -82,12 +91,21 @@ struct CPUBitmap {
     glDeleteTextures(1, &texture);
   }
 
-  unsigned char* get_ptr( void ) const   { return pixels.get(); }
-  long image_size( void ) const { return width_ * height_ * 4; }
+  unsigned char *get_ptr(void) const { return pixels.get(); }
+  long image_size(void) const { return width * height * 4; }
 
-  void display_and_exit( void(*e)(void*) = NULL ) {
-    CPUBitmap** bitmap = get_bitmap_ptr();
+  void click_drag(void (*f)(void *, int, int, int, int)) {
+    clickDrag = f;
+  }
+
+  void anim_and_exit(void (*f)(void *, int), void (*e)(void *)) {
+    CPUAnimBitmap **bitmap = get_bitmap_ptr();
     *bitmap = this;
+    fAnim = f;
+    animExit = e;
+    // a bug in the Windows GLUT implementation prevents us from
+    // passing zero arguments to glutInit()
+    int c = 1;
 
     // glfw: initialize and configure
     // ------------------------------
@@ -101,14 +119,14 @@ struct CPUBitmap {
 #endif
 
     // glfw window creation
-    GLFWwindow *window = glfwCreateWindow(width_, height_, "bitmap", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(width, height, "bitmap", NULL, NULL);
     if (window == NULL) {
       std::cout << "Failed to create GLFW window" << std::endl;
       glfwTerminate();
       return;
     }
     glfwMakeContextCurrent(window);
-    
+
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     // Note: You must initialize an OpenGL context (e.g., with GLFW) BEFORE calling glewInit
@@ -157,22 +175,42 @@ struct CPUBitmap {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height,
                  0, GL_RGBA, GL_UNSIGNED_BYTE, get_ptr());
 
     float mvp[16] = {
-      1.f, 0.f, 0.f, 0.f,
-      0.f, 1.f, 0.f, 0.f,
-      0.f, 0.f, 1.f, 0.f,
-      0.f, 0.f, 0.f, 1.f,
+        1.f,
+        0.f,
+        0.f,
+        0.f,
+        0.f,
+        1.f,
+        0.f,
+        0.f,
+        0.f,
+        0.f,
+        1.f,
+        0.f,
+        0.f,
+        0.f,
+        0.f,
+        1.f,
     };
+
+    static int ticks = 1;
 
     while (!glfwWindowShouldClose(window)) {
       // input
       processInput(window);
 
+      // compute new frame
+      fAnim(dataBlock, ticks++);
+      glBindTexture(GL_TEXTURE_2D, texture);
+      glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height,
+                      GL_RGBA, GL_UNSIGNED_BYTE, get_ptr());
+
       // render
-      glViewport(0, 0, width_, height_);
+      glViewport(0, 0, width, height);
       glClear(GL_COLOR_BUFFER_BIT);
 
       glUseProgram(program);
@@ -187,23 +225,40 @@ struct CPUBitmap {
       glfwSwapBuffers(window);
       glfwPollEvents();
     }
+
+    animExit(dataBlock);
+    glfwTerminate();
   }
 
   // static method used for glut callbacks
-  static CPUBitmap** get_bitmap_ptr( void ) {
-    static CPUBitmap *gBitmap;
+  static CPUAnimBitmap **get_bitmap_ptr(void)
+  {
+    static CPUAnimBitmap *gBitmap;
     return &gBitmap;
   }
 
   // static method used for glut callbacks
-  static void Draw( void ) {
-    CPUBitmap* bitmap = *(get_bitmap_ptr());
-    glClearColor(1.0, 0.0, 0.0, 1.0 );
-    glClear( GL_COLOR_BUFFER_BIT );
-    if (bitmap) {
-    }
-    glFlush();
+  static void mouse_func(int button, int state,
+                         int mx, int my)
+  {
+    // if (button == GLUT_LEFT_BUTTON)
+    // {
+    //   CPUAnimBitmap *bitmap = *(get_bitmap_ptr());
+    //   if (state == GLUT_DOWN)
+    //   {
+    //     bitmap->dragStartX = mx;
+    //     bitmap->dragStartY = my;
+    //   }
+    //   else if (state == GLUT_UP)
+    //   {
+    //     bitmap->clickDrag(bitmap->dataBlock,
+    //                       bitmap->dragStartX,
+    //                       bitmap->dragStartY,
+    //                       mx, my);
+    //   }
+    // }
   }
+
 };
 
-#endif  // __CPU_BITMAP_H__
+#endif // __CPU_ANIM_H__

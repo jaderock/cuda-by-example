@@ -29,3 +29,18 @@ cuda_binary(
         "//conditions:default": [],
     }),
 )
+
+cuda_binary(
+    name = "ripple",
+    srcs = [":ripple.cu"],
+    deps = [
+        "@glew//:glew_static",
+        "@glfw//:glfw",
+    ],
+    linkopts = select({
+        "@platforms//os:windows": ["-DEFAULTLIB:opengl32.lib"],
+        "@platforms//os:macos": ["-framework OpenGL"],
+        "@platforms//os:linux": ["-lGL"],
+        "//conditions:default": [],
+    }),
+)
