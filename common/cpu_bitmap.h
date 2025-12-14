@@ -4,7 +4,48 @@
 #include <iostream>
 #include <memory>
 
-#include "glfw_helper.h"
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+//#include "glfw_helper.h"
+//#include "gl_texture2d.h"
+
+typedef struct Vertex {
+  float pos[2];
+  float uv[2];
+} Vertex;
+
+static const Vertex vertices[6] = {
+    {{0.5f, 0.5f}, {1.0f, 1.0f}},   // top right
+    {{0.5f, -0.5f}, {1.0f, 0.0f}},  // bottom right
+    {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // bottom left
+    {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // bottom left (duplicate)
+    {{-0.5f, 0.5f}, {0.0f, 1.0f}},  // top left
+    {{0.5f, 0.5f}, {1.0f, 1.0f}}    // top right (duplicate)
+};
+
+static const char *vertex_shader_text =
+    "#version 330\n"
+    "uniform mat4 MVP;\n"
+    "in vec2 vUv;\n"
+    "in vec2 vPos;\n"
+    "out vec2 uv;\n"
+    "void main()\n"
+    "{\n"
+    "    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
+    "    uv = vUv;\n"
+    "}\n";
+
+static const char *fragment_shader_text =
+    "#version 330\n"
+    "in vec2 uv;\n"
+    "out vec4 fragment;\n"
+    "uniform sampler2D texSampler;\n"
+    "void main()\n"
+    "{\n"
+    "  //fragment = vec4(uv, 0.0, 1.0);\n"
+    "  fragment = texture(texSampler, uv);\n"
+    "}\n";
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 }
@@ -17,19 +58,38 @@ void processInput(GLFWwindow *window) {
 
 struct CPUBitmap {
   std::unique_ptr<unsigned char> pixels;
-  int x = 0, y = 0;
+  int width_ = 0;
+  int height_ = 0;
   void *dataBlock;
   void (*bitmapExit)(void*);
 
-  CPUBitmap(int width, int height, void *d = NULL) :
-    x(width), y(height), dataBlock(d) {
+  // OpenGL resources
+  GLuint vertex_buffer = 0;
+  GLuint vertex_shader = 0;
+  GLuint fragment_shader = 0;
+  GLuint program = 0;
+  GLuint texture = 0;
+
+  //
+  bool is_data_uploaded = false;
+
+  CPUBitmap(int width, int height, void *d = NULL) : width_(width), height_(height), dataBlock(d)
+  {
     pixels.reset(new unsigned char[width * height * 4]);
   }
 
-  ~CPUBitmap() = default;
+  ~CPUBitmap() {
+    glDeleteBuffers(1, &vertex_buffer);
+    glDetachShader(program, vertex_shader);
+    glDetachShader(program, fragment_shader);
+    glDeleteShader(vertex_shader);
+    glDeleteShader(fragment_shader);
+    glDeleteProgram(program);
+    glDeleteTextures(1, &texture);
+  }
 
   unsigned char* get_ptr( void ) const   { return pixels.get(); }
-  long image_size( void ) const { return x * y * 4; }
+  long image_size( void ) const { return width_ * height_ * 4; }
 
   void display_and_exit( void(*e)(void*) = NULL ) {
     CPUBitmap** bitmap = get_bitmap_ptr();
@@ -47,27 +107,87 @@ struct CPUBitmap {
 #endif
 
     // glfw window creation
-    GLFWwindow *window = glfwCreateWindow(x, y, "bitmap", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(width_, height_, "bitmap", NULL, NULL);
     if (window == NULL) {
       std::cout << "Failed to create GLFW window" << std::endl;
       glfwTerminate();
       return;
     }
     glfwMakeContextCurrent(window);
+    
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-      // Handle initialization failure
-      // e.g., std::cout << "Failed to initialize GLAD" << std::endl;
+    // Note: You must initialize an OpenGL context (e.g., with GLFW) BEFORE calling glewInit
+    GLenum err = glewInit();
+    if (GLEW_OK != err) {
+      std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
       return;
     }
+    // std::cout << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << std::endl;
+
+    glGenBuffers(1, &vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
+    glCompileShader(vertex_shader);
+
+    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
+    glCompileShader(fragment_shader);
+
+    program = glCreateProgram();
+    glAttachShader(program, vertex_shader);
+    glAttachShader(program, fragment_shader);
+    glLinkProgram(program);
+
+    const GLint mvp_location = glGetUniformLocation(program, "MVP");
+    const GLint vpos_location = glGetAttribLocation(program, "vPos");
+    const GLint vuv_location = glGetAttribLocation(program, "vUv");
+    const GLint uniformLocation = glGetUniformLocation(program, "texSampler");
+
+    GLuint vertex_array;
+    glGenVertexArrays(1, &vertex_array);
+    glBindVertexArray(vertex_array);
+    glEnableVertexAttribArray(vpos_location);
+    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
+                          sizeof(Vertex), (void *)offsetof(Vertex, pos));
+    glEnableVertexAttribArray(vuv_location);
+    glVertexAttribPointer(vuv_location, 2, GL_FLOAT, GL_FALSE,
+                          sizeof(Vertex), (void *)offsetof(Vertex, uv));
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_,
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, get_ptr());
+
+    float mvp[16] = {
+      1.f, 0.f, 0.f, 0.f,
+      0.f, 1.f, 0.f, 0.f,
+      0.f, 0.f, 1.f, 0.f,
+      0.f, 0.f, 0.f, 1.f,
+    };
 
     while (!glfwWindowShouldClose(window)) {
       // input
       processInput(window);
 
       // render
-      Draw();
+      glViewport(0, 0, width_, height_);
+      glClear(GL_COLOR_BUFFER_BIT);
+
+      glUseProgram(program);
+      glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat *)&mvp);
+      glBindVertexArray(vertex_array);
+      glActiveTexture(GL_TEXTURE0);
+      glBindTexture(GL_TEXTURE_2D, texture);
+      glUniform1i(uniformLocation, 0);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
 
       // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
       glfwSwapBuffers(window);
@@ -84,10 +204,9 @@ struct CPUBitmap {
   // static method used for glut callbacks
   static void Draw( void ) {
     CPUBitmap* bitmap = *(get_bitmap_ptr());
-    glClearColor(0.0, 0.0, 0.0, 1.0 );
+    glClearColor(1.0, 0.0, 0.0, 1.0 );
     glClear( GL_COLOR_BUFFER_BIT );
     if (bitmap) {
-      glDrawPixels(bitmap->x, bitmap->y, GL_RGBA, GL_UNSIGNED_BYTE, bitmap->pixels.get());
     }
     glFlush();
   }
