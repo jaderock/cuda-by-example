@@ -10,6 +10,7 @@ cuda_binary(
     srcs = ["julia-gpu.cc"],
     deps = [
         "//common:glfw-helper",
-        "//third-party/glad_opengl_v4_6:glad-lib",
+        #"//third-party/glad_opengl_v4_6:glad-lib",
+        "//third-party/glad-opengl-2.1:glad-lib",
     ],
 )
