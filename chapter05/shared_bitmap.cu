@@ -73,4 +73,3 @@ int main( void ) {
     bitmap.display_and_exit();
 }
 
-

@@ -7,21 +7,18 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-//#include "glfw_helper.h"
-//#include "gl_texture2d.h"
-
 typedef struct Vertex {
   float pos[2];
   float uv[2];
 } Vertex;
 
 static const Vertex vertices[6] = {
-    {{0.5f, 0.5f}, {1.0f, 1.0f}},   // top right
-    {{0.5f, -0.5f}, {1.0f, 0.0f}},  // bottom right
-    {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // bottom left
-    {{-0.5f, -0.5f}, {0.0f, 0.0f}}, // bottom left (duplicate)
-    {{-0.5f, 0.5f}, {0.0f, 1.0f}},  // top left
-    {{0.5f, 0.5f}, {1.0f, 1.0f}}    // top right (duplicate)
+    {{1.f, 1.f}, {1.0f, 0.0f}},   // top right
+    {{1.f, -1.f}, {1.0f, 1.f}},   // bottom right
+    {{-1.f, -1.f}, {0.0f, 1.0f}}, // bottom left
+    {{-1.f, -1.f}, {0.0f, 1.0f}}, // bottom left (duplicate)
+    {{-1.f, 1.f}, {0.0f, 0.0f}},  // top left
+    {{1.f, 1.f}, {1.0f, 0.0f}}    // top right (duplicate)
 };
 
 static const char *vertex_shader_text =

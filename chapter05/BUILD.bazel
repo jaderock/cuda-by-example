@@ -19,7 +19,13 @@ cuda_binary(
     name = "shared_bitmap",
     srcs = [":shared_bitmap.cu"],
     deps = [
-        "//common:glfw-helper",
-        "//third-party/glad_opengl_v4_6:glad-lib",
+        "@glew//:glew_static",
+        "@glfw//:glfw",
     ],
+    linkopts = select({
+        "@platforms//os:windows": ["-DEFAULTLIB:opengl32.lib"],
+        "@platforms//os:macos": ["-framework OpenGL"],
+        "@platforms//os:linux": ["-lGL"],
+        "//conditions:default": [],
+    }),
 )
