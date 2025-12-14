@@ -29,3 +29,20 @@ cc_library(
         #"@bazel_tools//src/conditions:darwin": [":glfw_src_darwin"],
     }),
 )
+
+cc_binary(
+    name = "glfw-window",
+    srcs = [
+        ":glfw-window.cc",
+    ],
+    deps = [
+        "@glfw//:glfw",
+        "@glew//:glew_static",
+    ],
+    linkopts = select({
+        "@platforms//os:windows": ["-DEFAULTLIB:opengl32.lib"],
+        "@platforms//os:macos": ["-framework OpenGL"],
+        "@platforms//os:linux": ["-lGL"],
+        "//conditions:default": [],
+    }),
+)
