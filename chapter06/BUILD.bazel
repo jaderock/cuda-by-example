@@ -1,0 +1,31 @@
+load("@rules_cuda//cuda:defs.bzl", "cuda_library", "cuda_binary")
+
+cuda_binary(
+    name = "ray",
+    srcs = ["ray.cu"],
+    deps = [
+        "@glew//:glew_static",
+        "@glfw//:glfw",
+    ],
+    linkopts = select({
+        "@platforms//os:windows": ["-DEFAULTLIB:opengl32.lib"],
+        "@platforms//os:macos": ["-framework OpenGL"],
+        "@platforms//os:linux": ["-lGL"],
+        "//conditions:default": [],
+    }),
+)
+
+cuda_binary(
+    name = "ray_noconst",
+    srcs = ["ray_noconst.cu"],
+    deps = [
+        "@glew//:glew_static",
+        "@glfw//:glfw",
+    ],
+    linkopts = select({
+        "@platforms//os:windows": ["-DEFAULTLIB:opengl32.lib"],
+        "@platforms//os:macos": ["-framework OpenGL"],
+        "@platforms//os:linux": ["-lGL"],
+        "//conditions:default": [],
+    }),
+)
